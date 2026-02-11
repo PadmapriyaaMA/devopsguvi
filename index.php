@@ -10,6 +10,19 @@ if (!isset($_SESSION['todos'])) {
 if (isset($_POST['todo']) && !empty(trim($_POST['todo']))) {
     $_SESSION['todos'][] = htmlspecialchars($_POST['todo']);
 }
+
+// Delete todo
+if (isset($_GET['delete'])) {
+    $index = $_GET['delete'];
+    unset($_SESSION['todos'][$index]);
+    $_SESSION['todos'] = array_values($_SESSION['todos']); // Re-index
+}
+
+// Update todo
+if (isset($_POST['update_index'])) {
+    $index = $_POST['update_index'];
+    $_SESSION['todos'][$index] = htmlspecialchars($_POST['updated_todo']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -24,16 +37,16 @@ if (isset($_POST['todo']) && !empty(trim($_POST['todo']))) {
         }
         .box {
             background: white;
-            width: 400px;
+            width: 450px;
             padding: 20px;
             border-radius: 8px;
         }
         input[type="text"] {
-            width: 70%;
+            width: 60%;
             padding: 8px;
         }
         input[type="submit"] {
-            padding: 8px 12px;
+            padding: 6px 10px;
         }
         ul {
             list-style: none;
@@ -44,6 +57,10 @@ if (isset($_POST['todo']) && !empty(trim($_POST['todo']))) {
             margin: 8px 0;
             padding: 10px;
             border-radius: 5px;
+        }
+        a {
+            text-decoration: none;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -59,11 +76,26 @@ if (isset($_POST['todo']) && !empty(trim($_POST['todo']))) {
     </form>
 
     <ul>
-        <?php
-        foreach ($_SESSION['todos'] as $todo) {
-            echo "<li>$todo</li>";
-        }
-        ?>
+        <?php foreach ($_SESSION['todos'] as $index => $todo): ?>
+            <li>
+                <?php if (isset($_GET['edit']) && $_GET['edit'] == $index): ?>
+                    
+                    <!-- Edit Form -->
+                    <form method="post" style="display:inline;">
+                        <input type="text" name="updated_todo" value="<?php echo $todo; ?>">
+                        <input type="hidden" name="update_index" value="<?php echo $index; ?>">
+                        <input type="submit" value="Save">
+                    </form>
+
+                <?php else: ?>
+                    
+                    <?php echo $todo; ?>
+                    <a href="?edit=<?php echo $index; ?>">Edit</a>
+                    <a href="?delete=<?php echo $index; ?>" style="color:red;">Delete</a>
+
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
     </ul>
 </div>
 
