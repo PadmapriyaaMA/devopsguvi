@@ -6,22 +6,24 @@ if (!isset($_SESSION['todos'])) {
     $_SESSION['todos'] = [];
 }
 
-// Add new todo
-if (isset($_POST['todo']) && !empty(trim($_POST['todo']))) {
-    $_SESSION['todos'][] = htmlspecialchars($_POST['todo']);
+// ADD TODO
+if (isset($_POST['add_todo']) && !empty(trim($_POST['todo']))) {
+    $_SESSION['todos'][] = htmlspecialchars(trim($_POST['todo']));
 }
 
-// Delete todo
-if (isset($_GET['delete'])) {
-    $index = $_GET['delete'];
+// DELETE TODO
+if (isset($_POST['delete_index'])) {
+    $index = $_POST['delete_index'];
     unset($_SESSION['todos'][$index]);
     $_SESSION['todos'] = array_values($_SESSION['todos']); // Re-index
 }
 
-// Update todo
+// UPDATE TODO
 if (isset($_POST['update_index'])) {
     $index = $_POST['update_index'];
-    $_SESSION['todos'][$index] = htmlspecialchars($_POST['updated_todo']);
+    if (!empty(trim($_POST['updated_todo']))) {
+        $_SESSION['todos'][$index] = htmlspecialchars(trim($_POST['updated_todo']));
+    }
 }
 ?>
 
@@ -45,8 +47,9 @@ if (isset($_POST['update_index'])) {
             width: 60%;
             padding: 8px;
         }
-        input[type="submit"] {
+        input[type="submit"], button {
             padding: 6px 10px;
+            margin-left: 5px;
         }
         ul {
             list-style: none;
@@ -58,9 +61,8 @@ if (isset($_POST['update_index'])) {
             padding: 10px;
             border-radius: 5px;
         }
-        a {
-            text-decoration: none;
-            margin-left: 10px;
+        .actions {
+            float: right;
         }
     </style>
 </head>
@@ -72,14 +74,15 @@ if (isset($_POST['update_index'])) {
     <!-- Add Todo Form -->
     <form method="post">
         <input type="text" name="todo" placeholder="Enter new todo">
-        <input type="submit" value="Add">
+        <input type="submit" name="add_todo" value="Add">
     </form>
 
     <ul>
         <?php foreach ($_SESSION['todos'] as $index => $todo): ?>
             <li>
+
                 <?php if (isset($_GET['edit']) && $_GET['edit'] == $index): ?>
-                    
+
                     <!-- Edit Form -->
                     <form method="post" style="display:inline;">
                         <input type="text" name="updated_todo" value="<?php echo $todo; ?>">
@@ -88,15 +91,26 @@ if (isset($_POST['update_index'])) {
                     </form>
 
                 <?php else: ?>
-                    
+
                     <?php echo $todo; ?>
-                    <a href="?edit=<?php echo $index; ?>">Edit</a>
-                    <a href="?delete=<?php echo $index; ?>" style="color:red;">Delete</a>
+
+                    <div class="actions">
+                        <!-- Edit Button -->
+                        <a href="?edit=<?php echo $index; ?>">Edit</a>
+
+                        <!-- Delete Button (POST method) -->
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="delete_index" value="<?php echo $index; ?>">
+                            <button type="submit">Remove</button>
+                        </form>
+                    </div>
 
                 <?php endif; ?>
+
             </li>
         <?php endforeach; ?>
     </ul>
+
 </div>
 
 </body>
